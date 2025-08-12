@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employee Management</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        h2 { color: #333; }
+        form { margin-bottom: 20px; }
+        input, button { padding: 8px; margin: 5px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; border: 1px solid #ccc; }
+        th { background: #f4f4f4; }
+        button { cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2>Employee Management System</h2>
+    <form id="employeeForm">
+        <input type="text" id="name" placeholder="Name" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="text" id="jobTitle" placeholder="Job Title">
+        <input type="number" id="salary" placeholder="Salary">
+        <input type="date" id="joinDate">
+        <button type="submit">Add Employee</button>
+    </form>
+    <table id="employeeTable">
+        <thead>
+            <tr>
+                <th>ID</th><th>Name</th><th>Email</th><th>Job Title</th>
+                <th>Salary</th><th>Join Date</th><th>Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        const API_URL = "http://localhost:8080/api/employees";
+
+        async function fetchEmployees() {
+            const res = await fetch(API_URL);
+            const data = await res.json();
+            const tbody = document.querySelector("#employeeTable tbody");
+            tbody.innerHTML = "";
+            data.forEach(emp => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${emp.id}</td>
+                        <td>${emp.name}</td>
+                        <td>${emp.email}</td>
+                        <td>${emp.jobTitle}</td>
+                        <td>${emp.salary}</td>
+                        <td>${emp.joinDate}</td>
+                        <td><button onclick="deleteEmployee(${emp.id})">Delete</button></td>
+                    </tr>`;
+            });
+        }
+
+        async function deleteEmployee(id) {
+            await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+            fetchEmployees();
+        }
+
+        document.getElementById("employeeForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const employee = {
+                name: document.getElementById("name").value,
+                email: document.getElementById("email").value,
+                jobTitle: document.getElementById("jobTitle").value,
+                salary: document.getElementById("salary").value,
+                joinDate: document.getElementById("joinDate").value
+            };
+            await fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(employee)
+            });
+            fetchEmployees();
+        });
+
+        fetchEmployees();
+    </script>
+</body>
+</html>
